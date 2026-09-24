@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="mdui-theme-auto">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
+  <meta name="renderer" content="webkit">
+  <title>一顿扫</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
+  <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+<div class="app-container">
+  <div class="top-bar">
+    <h1>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="2rem" height="2rem" style="vertical-align: middle; margin-right: 4px;">
+        <circle cx="128" cy="128" r="88" fill="none" stroke="#4f378b" stroke-width="18" />
+        <line x1="190" y1="190" x2="232" y2="232" stroke="#4f378b" stroke-width="18" stroke-linecap="round" />
+        <circle cx="128" cy="80" r="16" fill="#4f378b" />
+        <circle cx="84" cy="148" r="16" fill="#4f378b" />
+        <circle cx="172" cy="148" r="16" fill="#4f378b" />
+        <line x1="128" y1="96" x2="93" y2="138" stroke="#4f378b" stroke-width="8" stroke-linecap="round" />
+        <line x1="128" y1="96" x2="163" y2="138" stroke="#4f378b" stroke-width="8" stroke-linecap="round" />
+        <line x1="93" y1="138" x2="163" y2="138" stroke="#4f378b" stroke-width="8" stroke-linecap="round" />
+      </svg>
+      一顿扫
+      <span class="version-badge" id="versionBadge">v2.1.5</span>
+    </h1>
+  </div>
+
+<!--
+ *                        _oo0oo_
+ *                       o8888888o
+ *                       88" . "88
+ *                       (| -_- |)
+ *                       0\  =  /0
+ *                     ___/`---'\___
+ *                   .' \\|     |// '.
+ *                  / \\|||  :  |||// \
+ *                 / _||||| -:- |||||- \
+ *                |   | \\\  - /// |   |
+ *                | \_|  ''\---/''  |_/ |
+ *                \  .-\__  '-'  ___/-. /
+ *              ___'. .'  /--.--\  `. .'___
+ *           ."" '<  `.___\_<|>_/___.' >' "".
+ *          | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+ *          \  \ `_.   \_ __\ /__ _/   .-` /  /
+ *      =====`-.____`.___ \_____/___.-`___.-'=====
+ *                        `=---='
+ * 
+ * 
+ *      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * 
+ *            佛祖保佑       永不宕机     永无BUG
+-->
+
+  <mdui-dialog id="versionDialog" headline="版本信息">
+    <div style="padding: 0 1rem 1rem 1rem;">
+      <p><strong>当前版本：</strong> v2.1.5</p>
+      <p><strong>发布日期：</strong> 2026-09-24</p>
+      <p><strong>更新内容：</strong></p>
+      <ul>
+        <li>修复订阅自动清理</li>
+        <li>修复初始化目录</li>
+		<li>添加对 mihomo 配置文件支持</li>
+		<li>增加安全性</li>
+      </ul>
+    </div>
+    <mdui-button slot="action" variant="text" id="closeVersionDialog">关闭</mdui-button>
+  </mdui-dialog>
+
+  <mdui-dialog id="syntaxHelpDialog" headline="搜索语法说明" style="max-width: 90vw; width: 880px; margin-left: auto; margin-right: auto;">
+    <mdui-tabs value="survey">
+      <mdui-tab value="survey">资产测绘</mdui-tab>
+      <mdui-tab value="keyword">关键词</mdui-tab>
+
+      <mdui-tab-panel slot="panel" value="survey">
+        <div style="padding: 0.5rem 0;">
+          <h4 style="margin: 0 0 0.5rem 0;">测绘运算逻辑</h4>
+          <div class="syntax-table-wrap">
+            <table>
+              <thead>
+                <tr><th style="width: 120px;">连接符</th><th>含义</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>=</td><td>匹配，表示查询包含关键词资产。</td></tr>
+                <tr><td>==</td><td>精准匹配，表示仅查询关键词资产。</td></tr>
+                <tr><td>!=</td><td>剔除，表示剔除包含关键词资产。</td></tr>
+                <tr><td>()</td><td>括号内容优先级最高</td></tr>
+                <tr><td>&amp;&amp;、||</td><td>多条件组合查询。&amp;&amp;代表 and，||代表 or。</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4 class="syntax-description-mt-12">测绘查询语法</h4>
+          <div class="syntax-table-wrap">
+            <table>
+              <thead>
+                <tr><th style="width: 140px;">语法表达</th><th>说明</th><th style="width: 200px;">示例</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>title</td><td>检索含有关键词的网页标题</td><td class="example-cell">title="网络安全"</td></tr>
+                <tr><td>header</td><td>检索含有关键词的http请求响应头</td><td class="example-cell">header="互联网"</td></tr>
+                <tr><td>body</td><td>检索含有关键词的html正文</td><td class="example-cell">body="威胁情报"</td></tr>
+                <tr><td>banner</td><td>检索含有关键词的banner信息</td><td class="example-cell">banner="redis_version"</td></tr>
+                <tr><td>status_code</td><td>检索指定状态码</td><td class="example-cell">status_code="500"</td></tr>
+                <tr><td>plugins</td><td>检索CS服务器</td><td class="example-cell">plugins="CobaltStrikeBeacon"</td></tr>
+                <tr><td>plugins.values</td><td>检索CS服务器的相关信息</td><td class="example-cell">plugins.values="service-5dttvfnl-1253933974.sh.apigw.tencentcs.com"</td></tr>
+                <tr><td>js_name</td><td>检索网页包含的js文件名的资产</td><td class="example-cell">js_name="bootstrap-datetimepicker.min.js"</td></tr>
+                <tr><td>robots</td><td>检索网页robots内容</td><td class="example-cell">robots="Disallow"</td></tr>
+                <tr><td>psr</td><td>检索网页中公安备案号</td><td class="example-cell">psr="京公网安备11000002000008号"</td></tr>
+                <tr><td>content_length</td><td>检索指定content_length对应的资产</td><td class="example-cell">content_length="125"</td></tr>
+                <tr><td>etag</td><td>检索指定网站etag对应的资产</td><td class="example-cell">etag="64a11841-23f"</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </mdui-tab-panel>
+
+      <mdui-tab-panel slot="panel" value="keyword">
+        <div style="padding: 0.5rem 0;">
+          <h4 style="margin: 0 0 0.5rem 0;">关键词运算逻辑</h4>
+          <p style="margin: 0.25rem 0 0.75rem 0; color: rgb(var(--mdui-color-on-surface-variant));">注意：关键词和运算符 "&amp;&amp;" 间需输入空格。</p>
+          <div class="syntax-table-wrap">
+            <table>
+              <thead>
+                <tr><th style="width: 120px;">语法表达</th><th>说明</th><th style="width: 200px;">示例</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>""</td><td>双引号，精确匹配</td><td class="example-cell">intext="海莲花"</td></tr>
+                <tr><td>&amp;&amp;</td><td>必须同时包含两个语法下的关键词</td><td class="example-cell">intitle=报告 &amp;&amp; intext=APT</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4 class="syntax-description-mt-12">关键词查询语法参考</h4>
+          <p style="margin: 0.25rem 0 0.75rem 0; color: rgb(var(--mdui-color-on-surface-variant));">使用语法搜索关键词，可快速找到相关平台内容、博客和社交媒体，大幅提升查询效率哟。</p>
+          <div class="syntax-table-wrap">
+            <table>
+              <thead>
+                <tr><th style="width: 120px;">语法表达</th><th>说明</th><th style="width: 200px;">示例</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>intitle</td><td>搜索标题含特定关键词的内容</td><td class="example-cell">intitle=微步</td></tr>
+                <tr><td>intext</td><td>搜索正文包含特定关键词的内容</td><td class="example-cell">intext=海莲花</td></tr>
+                <tr><td>x</td><td>在平台内容中搜索包含特定关键词的内容</td><td class="example-cell">x=溯源</td></tr>
+                <tr><td>blog</td><td>在相关博客中搜索包含特定关键词的内容</td><td class="example-cell">blog=APT</td></tr>
+                <tr><td>smedia</td><td>在社交媒体结果中搜索包含特定关键词的内容</td><td class="example-cell">smedia=蜜罐</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </mdui-tab-panel>
+    </mdui-tabs>
+    <mdui-button slot="action" variant="text" id="closeSyntaxHelp">关闭</mdui-button>
+  </mdui-dialog>
+
+  <div class="config-stats-grid">
+    <mdui-card variant="elevated">
+      <h3 style="margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem; font-weight: 500; font-size: 1.1rem;">
+        <mdui-icon name="tune"></mdui-icon> 扫描配置
+      </h3>
+
+      <div class="config-section">
+        <div class="section-title">
+          <mdui-icon name="flash_on"></mdui-icon> 快捷搜索
+        </div>
+        <div class="grammar-input-group">
+          <mdui-text-field id="customGrammar" label="搜索语法" value='body="vless://"&&title="Index of /"'></mdui-text-field>
+          <mdui-dropdown trigger="click" placement="bottom-end" position-strategy="absolute">
+            <mdui-button-icon icon="arrow_drop_down" slot="trigger"></mdui-button-icon>
+            <mdui-menu id="grammarMenu" style="max-height: 260px; overflow-y: auto;"></mdui-menu>
+          </mdui-dropdown>
+          <mdui-button-icon id="syntaxHelpBtn" icon="help_outline"></mdui-button-icon>
+        </div>
+        <div class="search-btn-group">
+          <mdui-button variant="tonal" icon="search" id="searchFofa">在 FOFA 中搜索</mdui-button>
+          <mdui-button variant="tonal" icon="search" id="searchThreatbook">在微步在线中搜索</mdui-button>
+        </div>
+      </div>
+
+      <hr />
+
+      <div class="config-section">
+        <div class="section-title">
+          <mdui-icon name="attach_file"></mdui-icon> 上传目标文件
+        </div>
+        <div class="file-zone">
+          <mdui-tooltip content="支持 .txt 或 .json 文件" placement="top">
+            <mdui-button id="selectFileBtn" variant="outlined" icon="folder_open">选择文件</mdui-button>
+          </mdui-tooltip>
+          <span class="file-name" id="fileNameDisplay">支持FOFA微步在线以及txt，请勾选 "host" 或 "URL" 字段并以 json 格式导出，上传txt确保一行一个URL</span>
+          <input type="file" id="fileInput" accept=".txt,.json,text/plain,application/json" style="display: none;">
+        </div>
+      </div>
+
+      <hr />
+
+      <div class="config-section">
+        <div class="section-title">
+          <mdui-icon name="toggle_on"></mdui-icon> 扫描模式
+        </div>
+        <div class="checkbox-group">
+          <mdui-tooltip content="从订阅链接中提取节点信息（例如 base64 编码的订阅内容）" placement="top">
+            <mdui-checkbox id="subscription" checked>订阅提取</mdui-checkbox>
+          </mdui-tooltip>
+          <mdui-tooltip content="从 HTML 页面源码中解析出节点链接" placement="top">
+            <mdui-checkbox id="html" checked>HTML提取</mdui-checkbox>
+          </mdui-tooltip>
+          <mdui-tooltip content="遍历网站目录，扫描常见配置文件（如 txt, json, yaml 等）" placement="top">
+            <mdui-checkbox id="traverse" checked>遍历扫描</mdui-checkbox>
+          </mdui-tooltip>
+        </div>
+      </div>
+
+      <hr />
+
+      <div class="config-section">
+        <div class="section-title">
+          <mdui-icon name="settings"></mdui-icon> 参数设置
+        </div>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>遍历层级 <span style="font-size:0.7rem;">(0-5)</span></span>
+            <span class="slider-value" id="depthValue">3</span>
+          </div>
+          <mdui-slider id="depthSlider" min="0" max="5" step="1" value="3"></mdui-slider>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>超时 (ms)</span>
+            <span class="slider-value" id="timeoutValue">10000</span>
+          </div>
+          <mdui-slider id="timeoutSlider" min="0" max="10000" step="100" value="1000"></mdui-slider>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>并发数量 <span style="font-size:0.7rem;">(1-100)</span></span>
+            <span class="slider-value" id="concurrencyValue">100</span>
+          </div>
+          <mdui-slider id="concurrencySlider" min="1" max="100" step="1" value="10"></mdui-slider>
+        </div>
+
+        <div class="form-row">
+          <mdui-text-field id="extensions" label="文件扩展名" value="txt,json,yaml,yml,conf" style="flex:1;"></mdui-text-field>
+        </div>
+      </div>
+
+      <hr />
+
+      <div class="config-section">
+        <div class="section-title">
+          <mdui-icon name="more_horiz"></mdui-icon> 其他选项
+        </div>
+        <mdui-checkbox id="ignoreSSL" style="margin-top: 0.5rem;">忽略SSL证书错误</mdui-checkbox>
+      </div>
+
+      <hr />
+
+      <div class="config-section">
+        <mdui-button id="startBtn" variant="filled" icon="play_arrow" full-width style="margin-bottom: 0.75rem;">开始扫描</mdui-button>
+        <div class="control-bar">
+          <mdui-button id="pauseBtn" variant="tonal" icon="pause" disabled>暂停</mdui-button>
+          <mdui-button id="stopBtn" variant="tonal" icon="stop" disabled>终止</mdui-button>
+        </div>
+      </div>
+    </mdui-card>
+
+    <mdui-card variant="elevated">
+      <h3 style="margin-top: 0; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-weight: 500; font-size: 1.1rem;">
+        <mdui-icon name="analytics"></mdui-icon> 扫描统计
+      </h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-label">已扫描</span>
+          <span class="stat-number" id="statScanned">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">成功</span>
+          <span class="stat-number" id="statSuccess">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">失败</span>
+          <span class="stat-number" id="statFailed">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">节点</span>
+          <span class="stat-number" id="statNodes">0</span>
+        </div>
+      </div>
+      <div class="progress-container" id="progressContainer" style="display: none;">
+        <mdui-linear-progress id="scanProgress" max="100" value="0"></mdui-linear-progress>
+        <div class="progress-percent" id="progressPercent">0%</div>
+      </div>
+    </mdui-card>
+  </div>
+
+  <div class="logs-results-grid">
+    <mdui-card variant="elevated">
+      <h3 style="margin-top: 0; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-weight: 500; font-size: 1.1rem;">
+        <mdui-icon name="developer_mode"></mdui-icon> 实时日志
+      </h3>
+      <mdui-text-field id="log" variant="outlined" rows="12" readonly placeholder="等待扫描任务..."></mdui-text-field>
+    </mdui-card>
+    <mdui-card variant="elevated">
+      <h3 style="margin-top: 0; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-weight: 500; font-size: 1.1rem;">
+        <mdui-icon name="list_alt"></mdui-icon> 节点结果
+      </h3>
+      <mdui-text-field id="result" variant="outlined" rows="12" readonly placeholder="发现的节点将显示在此处..."></mdui-text-field>
+      <div class="action-bar">
+        <mdui-button id="copyBtn" variant="tonal" icon="content_copy">复制结果</mdui-button>
+        <mdui-button id="exportBtn" variant="tonal" icon="file_download">导出TXT</mdui-button>
+        <mdui-button id="copySubUrlBtn" variant="tonal" icon="link">复制订阅链接</mdui-button>
+		<mdui-button id="importClashBtn" variant="tonal">
+  <svg slot="icon" width="24" height="24" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"
+       fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M27.19,42.5a89.0444,89.0444,0,0,1-14.6813-1.5725S13.94,12.3721,17.9209,5.5357c-.13-.297,2.9919,1.2125,4.4218,6.2665a25.5569,25.5569,0,0,1,4.8471-.47"/>
+    <path d="M27.19,42.5a89.0444,89.0444,0,0,0,14.6813-1.5725S40.44,12.3721,36.4583,5.5357c.03-.2006-3.59,1.7549-4.4218,6.2665a25.5582,25.5582,0,0,0-4.8471-.47"/>
+    <path d="M12.5083,40.927C10.5777,40.6,7.56,40.6178,6.4685,37.44c-1.0674-3.107.4377-6.6708,3.7411-7.0453"/>
+  </svg>
+  一键导入Clash
+</mdui-button>
+      </div>
+    </mdui-card>
+  </div>
+
+  <div class="footer-author">
+    <span>作者：</span>
+    <a href="https://t.me/nnhenry932" target="_blank" rel="noopener noreferrer">
+      <mdui-icon name="send" style="font-size: 1rem;"></mdui-icon>
+      @nnhenry932
+    </a>
+  </div>
+</div>
+</body>
+</html>

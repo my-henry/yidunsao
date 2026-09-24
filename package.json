@@ -1,0 +1,25 @@
+{
+  "name": "yidunsao",
+  "version": "2.1.5",
+  "description": "Yidunsao – Multi-mode proxy node scanner with real-time WebSocket feedback and subscription generation.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": ["proxy", "scanner", "node", "subscription", "security"],
+  "author": "nnhenry932 <https://t.me/nnhenry932>",
+  "license": "ISC",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "cheerio": "^1.0.0",
+    "express": "^4.21.2",
+    "js-yaml": "^4.1.0",
+    "multer": "^2.0.0",
+    "ws": "^8.18.0"
+  }
+}
