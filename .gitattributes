@@ -1,0 +1,20 @@
+# 默认：所有文本文件在仓库里统一用 LF
+* text=auto eol=lf
+
+# 明确指定为文本文件
+*.js      text eol=lf
+*.json    text eol=lf
+*.md      text eol=lf
+*.html    text eol=lf
+*.css     text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+
+# 二进制文件不转换
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.ico     binary
+*.woff    binary
+*.woff2   binary
