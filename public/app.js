@@ -162,7 +162,8 @@
       if (currentWs && currentWs.readyState === WebSocket.OPEN) {
         currentWs.close();
       }
-      const ws = new WebSocket(`ws://${location.host}?sessionId=${sessionId}`);
+      const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const ws = new WebSocket(`${wsProto}//${location.host}?sessionId=${sessionId}`);
       const timeout = setTimeout(() => {
         ws.close();
         reject(new Error('WebSocket 连接超时'));
