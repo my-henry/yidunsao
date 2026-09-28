@@ -2,6 +2,8 @@
 
 批量扫描网址，自动提取代理节点，生成订阅链接。
 
+[![在线体验](https://img.shields.io/badge/在线体验-点击访问-4f378b?style=for-the-badge)](https://yds.chulaile.cloud-ip.cc)
+
 ## 功能
 
 - 输入一批网址，自动抓取并解析代理节点
