@@ -170,7 +170,7 @@ async function fetchUrl(url, options, signal) {
         timeout: options.timeout, httpAgent: agent, httpsAgent: agent,
         maxRedirects: 5, maxContentLength: MAX_CONTENT_LENGTH, maxBodyLength: MAX_CONTENT_LENGTH,
         validateStatus: () => true, signal,
-        headers: { "User-Agent": "Mozilla/5.0 (compatible; Yidunsao/2.2.0)" },
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; Yidunsao/2.1.7)" },
         responseType: "text", transformResponse: [(d) => d], decompress: true,
     });
     let data = resp.data;
@@ -523,7 +523,7 @@ function extractNodesFromClashYaml(text) {
 function extractNodes(text = "") {
     if (!text || typeof text !== "string") return [];
     if (isClashYaml(text)) {
-        const yamlNodes = extractNodesFromClashYAML(text);
+        const yamlNodes = extractNodesFromClashYaml(text);
         if (yamlNodes.length > 0) {
             const linkNodes = extractNodesFromLinks(text);
             return [...new Set([...yamlNodes, ...linkNodes])];
@@ -531,8 +531,6 @@ function extractNodes(text = "") {
     }
     return extractNodesFromLinks(text);
 }
-
-function extractNodesFromClashYAML(text) { return extractNodesFromClashYaml(text); }
 
 const COMMON_FILES = [
     "sub.txt", "nodes.txt", "proxy.txt", "config.json", "config.yaml",

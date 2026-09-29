@@ -1,70 +1,4 @@
 (function() {
-  const presetGrammars = [
-    'body="vless://"&&title="Index of /"',
-    'body="vless://"&&title="Directory listing for /"',
-    'body="sub.txt"&&title="Index of /"',
-    'body="sub.txt"&&title="Directory listing for /"',
-    'body="vless://"&&title="Subscription"',
-    'body="vless://"&&title="sub"',
-    'body="vless://"&&title="xray"',
-    'body="vless://"&&title="Manager"',
-    'body="vless://"&&body="&encryption="&&body="&sni"&&body="&type="'
-  ];
-
-  const grammarInput = document.getElementById('customGrammar');
-  const grammarMenu = document.getElementById('grammarMenu');
-  const dropdown = grammarMenu.closest('mdui-dropdown');
-  function renderMenu() {
-    grammarMenu.innerHTML = '';
-    presetGrammars.forEach(grammar => {
-      const item = document.createElement('mdui-menu-item');
-      item.textContent = grammar;
-      item.classList.add('grammar-menu-item');
-      item.addEventListener('click', function(e) {
-        grammarInput.value = grammar;
-        grammarInput.dispatchEvent(new Event('input', { bubbles: true }));
-        if (dropdown) dropdown.open = false;
-      });
-      grammarMenu.appendChild(item);
-    });
-  }
-  renderMenu();
-  const syntaxHelpBtn = document.getElementById('syntaxHelpBtn');
-  const syntaxDialog = document.getElementById('syntaxHelpDialog');
-  const closeSyntaxHelp = document.getElementById('closeSyntaxHelp');
-
-  syntaxHelpBtn.addEventListener('click', function() {
-    syntaxDialog.open = true;
-  });
-  closeSyntaxHelp.addEventListener('click', function() {
-    syntaxDialog.open = false;
-  });
-
-  function getCurrentGrammar() {
-    return grammarInput.value.trim();
-  }
-
-  document.getElementById('searchFofa').addEventListener('click', function() {
-    const grammar = getCurrentGrammar();
-    if (!grammar) {
-      mdui.snackbar({ message: '请输入或选择搜索语法', placement: 'top' });
-      return;
-    }
-    const base64 = btoa(unescape(encodeURIComponent(grammar)));
-    const url = `https://fofa.info/result?qbase64=${encodeURIComponent(base64)}`;
-    window.open(url, '_blank');
-  });
-
-  document.getElementById('searchThreatbook').addEventListener('click', function() {
-    const grammar = getCurrentGrammar();
-    if (!grammar) {
-      mdui.snackbar({ message: '请输入或选择搜索语法', placement: 'top' });
-      return;
-    }
-    const url = `https://x.threatbook.com/v5/survey?q=${encodeURIComponent(grammar)}`;
-    window.open(url, '_blank');
-  });
-
   const depthSlider = document.getElementById('depthSlider');
   const timeoutSlider = document.getElementById('timeoutSlider');
   const concurrencySlider = document.getElementById('concurrencySlider');
@@ -85,6 +19,10 @@
 
   function getSliderValue(slider) {
     return parseInt(slider.value, 10);
+  }
+
+  function toast(message) {
+    mdui.snackbar({ message });
   }
 
   let totalUrls = 0;
@@ -131,12 +69,12 @@
     if (!field) return;
     let current = field.value || '';
     field.value = current + text + '\n';
-    
+
     const innerTextarea = field.shadowRoot?.querySelector('textarea');
     if (innerTextarea) {
       innerTextarea.scrollTo({ top: innerTextarea.scrollHeight, behavior: 'smooth' });
     }
-    
+
     field.classList.remove('flash-animation');
     void field.offsetWidth;
     field.classList.add('flash-animation');
@@ -214,11 +152,11 @@
     scanProgress.max = 100;
     scanProgress.value = 0;
     progressPercent.innerText = '0%';
-    progressContainer.style.display = 'block';
+    progressContainer.hidden = false;
   }
 
   function hideProgress() {
-    progressContainer.style.display = 'none';
+    progressContainer.hidden = true;
     if (scanProgress) scanProgress.value = 0;
     if (progressPercent) progressPercent.innerText = '0%';
   }
@@ -234,7 +172,7 @@
       currentWs = null;
     }
     appendToTextField(logField, `[系统] ${message}`);
-    mdui.snackbar({ message: message, placement: 'top' });
+    toast(message);
   }
 
   function extractUrlsFromJson(obj, collected = new Set()) {
@@ -281,6 +219,7 @@
       const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
       totalUrls = lines.length;
       console.log(`[TXT] 有效 URL 数量: ${totalUrls}`);
+      toast(`从 TXT 中提取到 ${totalUrls} 个地址`);
       return;
     }
 
@@ -290,7 +229,7 @@
       try {
         jsonObj = JSON.parse(text);
       } catch (parseErr) {
-        mdui.snackbar({ message: 'JSON 解析失败，将作为纯文本处理', placement: 'top' });
+        toast('JSON 解析失败，将作为纯文本处理');
         currentFileBlob = file;
         const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
         totalUrls = lines.length;
@@ -298,7 +237,7 @@
       }
       const urlsSet = extractUrlsFromJson(jsonObj);
       if (urlsSet.size === 0) {
-        mdui.snackbar({ message: '未找到 "URL" 或 "host" 字段，将作为纯文本处理', placement: 'top' });
+        toast('未找到 "URL" 或 "host" 字段，将作为纯文本处理');
         currentFileBlob = file;
         const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
         totalUrls = lines.length;
@@ -309,10 +248,10 @@
       currentFileBlob = new File([blob], file.name.replace(/\.json$/i, '.txt'), { type: 'text/plain' });
       totalUrls = urlsSet.size;
       console.log(`[JSON] 提取到 ${totalUrls} 个 URL/host 条目`);
-      mdui.snackbar({ message: `从 JSON 中提取到 ${totalUrls} 个地址`, placement: 'top' });
+      toast(`从 JSON 中提取到 ${totalUrls} 个地址`);
     } catch (err) {
       console.error(err);
-      mdui.snackbar({ message: '读取文件失败，回退文本模式', placement: 'top' });
+      toast('读取文件失败，回退文本模式');
       currentFileBlob = file;
       const text = await file.text();
       const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
@@ -322,15 +261,15 @@
 
   async function startScan() {
     if (isScanning) {
-      mdui.snackbar({ message: '扫描进行中，请稍后', placement: 'top' });
+      toast('扫描进行中，请稍后');
       return;
     }
     if (!currentFileBlob) {
-      mdui.snackbar({ message: '请先选择一个文件（.txt 或 .json）', placement: 'top' });
+      toast('请先选择一个文件（.txt 或 .json）');
       return;
     }
     if (totalUrls === 0) {
-      mdui.snackbar({ message: '文件中没有有效的 URL 条目', placement: 'top' });
+      toast('文件中没有有效的 URL 条目');
       return;
     }
 
@@ -356,7 +295,7 @@
       console.log('[DEBUG] WebSocket 连接成功');
     } catch (err) {
       console.error('[DEBUG] WebSocket 连接失败:', err);
-      mdui.snackbar({ message: 'WebSocket 连接失败: ' + err.message, placement: 'top' });
+      toast('WebSocket 连接失败: ' + err.message);
       finishScan('WebSocket 连接失败');
       return;
     }
@@ -389,7 +328,7 @@
       }
 
       if (!json.success) {
-        mdui.snackbar({ message: json.error || '扫描失败', placement: 'top' });
+        toast(json.error || '扫描失败');
         appendToTextField(logField, `[错误] ${json.error || '扫描失败'}`);
         finishScan('扫描失败');
         return;
@@ -399,7 +338,7 @@
       if (err.name === 'AbortError') {
         console.log('Fetch 请求被用户中止');
       } else {
-        mdui.snackbar({ message: err.message, placement: 'top' });
+        toast(err.message);
         appendToTextField(logField, `[请求错误] ${err.message}`);
         finishScan('请求错误: ' + err.message);
       }
@@ -414,18 +353,18 @@
       pauseBtn.textContent = '继续';
       if (currentWs && currentWs.readyState === WebSocket.OPEN) {
         currentWs.send(JSON.stringify({ type: 'control', action: 'pause' }));
-        mdui.snackbar({ message: '已发送暂停指令，后端将暂停新任务', placement: 'top' });
+        toast('已发送暂停指令，后端将暂停新任务');
       } else {
-        mdui.snackbar({ message: 'WebSocket 未连接，无法暂停', placement: 'top' });
+        toast('WebSocket 未连接，无法暂停');
       }
     } else {
       pauseBtn.icon = 'pause';
       pauseBtn.textContent = '暂停';
       if (currentWs && currentWs.readyState === WebSocket.OPEN) {
         currentWs.send(JSON.stringify({ type: 'control', action: 'resume' }));
-        mdui.snackbar({ message: '已发送恢复指令，扫描将继续', placement: 'top' });
+        toast('已发送恢复指令，扫描将继续');
       } else {
-        mdui.snackbar({ message: 'WebSocket 未连接，无法继续', placement: 'top' });
+        toast('WebSocket 未连接，无法继续');
       }
     }
   }
@@ -454,14 +393,14 @@
   copyBtn.addEventListener('click', async () => {
     const text = resultField.value;
     if (!text.trim()) {
-      mdui.snackbar({ message: '暂无节点内容', placement: 'top' });
+      toast('暂无节点内容');
       return;
     }
     try {
       await navigator.clipboard.writeText(text);
-      mdui.snackbar({ message: '已复制到剪贴板', placement: 'top' });
+      toast('已复制到剪贴板');
     } catch (err) {
-      mdui.snackbar({ message: '复制失败，请手动复制', placement: 'top' });
+      toast('复制失败，请手动复制');
     }
   });
 
@@ -469,7 +408,7 @@
   exportBtn.addEventListener('click', () => {
     const content = resultField.value;
     if (!content.trim()) {
-      mdui.snackbar({ message: '无数据可导出', placement: 'top' });
+      toast('无数据可导出');
       return;
     }
     const blob = new Blob([content], { type: 'text/plain' });
@@ -478,13 +417,13 @@
     a.download = `nodes_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.txt`;
     a.click();
     URL.revokeObjectURL(a.href);
-    mdui.snackbar({ message: '导出成功', placement: 'top' });
+    toast('导出成功');
   });
 
   const copySubUrlBtn = document.getElementById('copySubUrlBtn');
   copySubUrlBtn.addEventListener('click', async () => {
     if (!currentSubUrl) {
-      mdui.snackbar({ message: '暂无订阅链接，请先完成一次扫描', placement: 'top' });
+      toast('暂无订阅链接，请先完成一次扫描');
       return;
     }
 
@@ -518,17 +457,17 @@
 
     try {
       await copyToClipboard(currentSubUrl);
-      mdui.snackbar({ message: '订阅链接已复制', placement: 'top' });
+      toast('订阅链接已复制');
     } catch (err) {
       console.warn('Clipboard API 复制失败，尝试降级方案', err);
       const success = fallbackCopy(currentSubUrl);
       if (success) {
-        mdui.snackbar({ message: '订阅链接已复制', placement: 'top' });
+        toast('订阅链接已复制');
       } else {
         mdui.dialog({
-          title: '复制失败',
-          content: `无法自动复制到剪贴板，请手动复制以下链接：<br><br><code style="word-break:break-all;">${escapeHtml(currentSubUrl)}</code>`,
-          buttons: [{ text: '关闭' }]
+          headline: '复制失败',
+          description: `无法自动复制到剪贴板，请手动复制以下链接：\n\n${currentSubUrl}`,
+          actions: [{ text: '关闭' }]
         });
       }
     }
@@ -538,7 +477,7 @@
   if (importClashBtn) {
     importClashBtn.addEventListener('click', function() {
       if (!currentSubUrl) {
-        mdui.snackbar({ message: '暂无订阅链接，请先完成一次扫描', placement: 'top' });
+        toast('暂无订阅链接，请先完成一次扫描');
         return;
       }
 
@@ -550,28 +489,13 @@
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(convertedUrl).then(() => {
-          mdui.snackbar({
-            message: '已尝试自动导入，同时转换后的订阅链接已复制，若未自动弹出请手动添加',
-            placement: 'top',
-            duration: 5000
-          });
+          toast('已尝试自动导入，同时转换后的订阅链接已复制，若未自动弹出请手动添加');
         }).catch(() => {
-          mdui.snackbar({ message: '已尝试自动导入，若未弹出请手动复制链接添加', placement: 'top' });
+          toast('已尝试自动导入，若未弹出请手动复制链接添加');
         });
       } else {
-        mdui.snackbar({ message: '已尝试自动导入，若未弹出请手动复制链接添加', placement: 'top' });
+        toast('已尝试自动导入，若未弹出请手动复制链接添加');
       }
-    });
-  }
-
-  function escapeHtml(str) {
-    return str.replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-      return c;
     });
   }
 
@@ -579,8 +503,13 @@
   const versionDialog = document.getElementById('versionDialog');
   const closeVersionDialog = document.getElementById('closeVersionDialog');
   if (versionBadge && versionDialog) {
-    versionBadge.addEventListener('click', () => {
-      versionDialog.open = true;
+    const openDialog = () => { versionDialog.open = true; };
+    versionBadge.addEventListener('click', openDialog);
+    versionBadge.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openDialog();
+      }
     });
     if (closeVersionDialog) {
       closeVersionDialog.addEventListener('click', () => {

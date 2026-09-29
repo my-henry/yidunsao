@@ -1,6 +1,6 @@
 {
   "name": "yidunsao",
-  "version": "2.1.6",
+  "version": "2.1.7",
   "description": "Yidunsao – Multi-mode proxy node scanner with real-time WebSocket feedback and subscription generation.",
   "main": "server.js",
   "scripts": {
@@ -12,7 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "dependencies": {
     "axios": "^1.7.9",
